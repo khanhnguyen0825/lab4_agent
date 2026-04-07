@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TravelBuddy - Smart Assistant</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <!-- Include Marked.js to parse markdown from the LLM -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="decoration-1"></div>
+    <div class="decoration-2"></div>
+    
+    <div class="chatbot-container">
+        <header class="header">
+            <div class="bot-avatar">
+                <i class="fa-solid fa-plane-up" style="color: white; font-size: 20px;"></i>
+            </div>
+            <div class="header-info">
+                <h1>TravelBuddy AI</h1>
+                <p><span class="status-dot"></span> Trợ lý du lịch thông minh đang trực tuyến</p>
+            </div>
+        </header>
+        
+        <main class="chat-box" id="chat-box">
+            <div class="message bot">
+                <div class="message-content">
+                    <p>Chào bạn! Mình là TravelBuddy – Trợ lý Du lịch Thông minh.</p>
+                    <p>Mình có thể giúp bạn tìm kiếm chuyến bay, khách sạn, và lập ngân sách cho các chuyến đi. Hãy cho mình biết bạn muốn đi đâu nhé! ✈️</p>
+                </div>
+            </div>
+            
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typing-indicator">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </main>
+        
+        <footer class="input-area">
+            <form id="chat-form">
+                <div class="input-wrapper">
+                    <input type="text" id="message-input" placeholder="Bạn muốn đi du lịch ở đâu?..." autocomplete="off" required>
+                </div>
+                <button type="submit" id="send-btn" title="Gửi">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </form>
+        </footer>
+    </div>
+
+    <script>
+        // Generate a random thread_id to identify the session
+        const threadId = 'session_' + Math.random().toString(36).substring(2, 9);
+        const chatBox = document.getElementById('chat-box');
+        const chatForm = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message-input');
+        const typingIndicator = document.getElementById('typing-indicator');
+
+        function appendMessage(sender, content, useMarkdown=false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            if (useMarkdown) {
+                // Parse markdown to HTML
+                contentDiv.innerHTML = marked.parse(content);
+            } else {
+                const p = document.createElement('p');
+                p.textContent = content;
+                contentDiv.appendChild(p);
+            }
+            
+            messageDiv.appendChild(contentDiv);
+            chatBox.insertBefore(messageDiv, typingIndicator);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            // Add user message to UI
+            appendMessage('user', message);
+            messageInput.value = '';
+            
+            // Show typing indicator
+            typingIndicator.classList.add('active');
+            scrollToBottom();
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        thread_id: threadId
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                
+                const data = await response.json();
+                
+                // Hide typing indicator
+                typingIndicator.classList.remove('active');
+                
+                // Add bot response to UI
+                appendMessage('bot', data.response, true);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                typingIndicator.classList.remove('active');
+                appendMessage('bot', 'Xin lỗi, đã xảy ra lỗi kết nối. Vui lòng kiểm tra lại backend server và kết nối mạng!');
+            }
+        });
+    </script>
+</body>
+</html>
