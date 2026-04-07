@@ -12,7 +12,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
 
 # Import tools từ file tools.py của bạn
-from tools import search_flights, search_hotels, calculate_budget
+from tools import search_flights, search_hotels, calculate_budget, get_current_weather
 
 load_dotenv()
 
@@ -25,7 +25,7 @@ class AgentState(TypedDict):
     messages: Annotated[list, add_messages]
 
 # 3. Khởi tạo LLM và Tools
-tools_list = [search_flights, search_hotels, calculate_budget]
+tools_list = [search_flights, search_hotels, calculate_budget, get_current_weather]
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 llm_with_tools = llm.bind_tools(tools_list)
 

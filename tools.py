@@ -1,4 +1,5 @@
 import os
+import requests
 from langchain_core.tools import tool
 
 # =================================================================
@@ -134,3 +135,37 @@ def calculate_budget(total_budget: int, expenses: str) -> str:
         return result
     except Exception as e:
         return f"Lỗi tính toán: {str(e)}. Vui lòng nhập đúng định dạng 'tên:số_tiền'."
+
+@tool
+def get_current_weather(city: str) -> str:
+    """Lấy thông tin thời tiết hiện tại và đánh giá mức độ phù hợp đi du lịch tại một khu vực/thành phố thời gian thực."""
+    try:
+        url = f"https://wttr.in/{city}?format=j1"
+        response = requests.get(url, timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            current = data['current_condition'][0]
+            temp_c = current['temp_C']
+            desc = current['weatherDesc'][0]['value']
+            humidity = current['humidity']
+            
+            return_str = f"Thời tiết tại {city} hiện tại đang là {temp_c}°C, tình trạng: {desc}, độ ẩm {humidity}%.\n\nĐánh giá: "
+            
+            temp_val = int(temp_c)
+            desc_lower = desc.lower()
+            if any(rain_word in desc_lower for rain_word in ['rain', 'shower', 'thunder', 'storm', 'drizzle']):
+                return_str += "Khu vực này đang có mưa hoặc thời tiết xấu. Không quá lý tưởng nếu đi dạo ngoài trời, hãy cân nhắc mang theo ô dù hoặc chọn các điểm tham quan trong nhà (bảo tàng, cafe)."
+            elif temp_val > 35:
+                return_str += "Thời tiết khá nóng bức. Nếu đi biển thì rất phù hợp, nhưng nếu đi tour ngoài trời bạn cần cẩn thận chống nắng và bù nước."
+            elif 20 <= temp_val <= 32:
+                return_str += "Thời tiết rất mát mẻ và lý tưởng cho các hoạt động du lịch, khám phá ngoài trời lúc này!"
+            elif temp_val < 15:
+                return_str += "Trời khá lạnh, bạn nên khuyên dùng khuyên mang theo áo khoác ấm khi đi lịch trình."
+            else:
+                return_str += "Thời tiết ở mức bình thường, đủ đẹp để lên lịch trình tham quan tự do."
+                
+            return return_str
+        else:
+            return f"Lỗi gọi API: Không thể lấy thông tin thời tiết cho {city} lúc này."
+    except Exception as e:
+        return f"Lỗi lấy thông tin thời tiết: {str(e)}"
