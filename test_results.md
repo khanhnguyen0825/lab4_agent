@@ -1,4 +1,4 @@
-# TravelBuddy Test Results
+# TravelBuddy Test Results (mock data)
 
 ## Test 1: Direct answer
 
@@ -98,3 +98,83 @@ Hãy cho mình biết để mình có thể tư vấn tốt nhất nhé!
 > **[Hệ thống]** Trả lời trực tiếp
 
 **TravelBuddy:** Xin lỗi, nhưng mình không thể giúp bạn với bài tập Python hay bất kỳ vấn đề nào không liên quan đến du lịch. Nếu bạn có kế hoạch du lịch hoặc cần tư vấn về chuyến đi, hãy cho mình biết nhé!
+
+# TravelBuddy Test Results (realtime data)
+
+## Test 6: Kiểm tra API Thời Tiết (wttr.in)
+**Mục tiêu:** LLM tự nhận diện khu vực, trigger tool `get_current_weather`, đọc JSON nhiệt độ và đưa lời khuyên an toàn.
+
+**Bạn:** Thời tiết ở Phú Quốc hiện tại thế nào? Có thích hợp để tắm biển không hay toàn mưa bão?
+
+*TravelBuddy đang suy nghĩ...*
+
+> **[Hệ thống]** Gọi tool: `get_current_weather({'city': 'Phú Quốc'})`
+> 
+> **[Hệ thống]** Trả lời trực tiếp
+
+**TravelBuddy:** Thời tiết ở Phú Quốc hiện tại rất tuyệt vời với nhiệt độ 30°C, trời nắng và độ ẩm 62%. Đây là điều kiện lý tưởng để tắm biển và tham gia các hoạt động ngoài trời. Bạn có thể thoải mái tận hưởng kỳ nghỉ của mình tại đây!
+
+---
+
+## Test 7: Kiểm tra Vé máy bay (SerpApi)
+**Mục tiêu:** Bắt buộc AI moi rễ kết quả giá vé máy bay thật từ Google Search (bỏ qua Mock database).
+
+**Bạn:** Mình muốn bay từ Hà Nội đi Đà Lạt trong hôm nay, hãy check Google xem giá vé rẻ nhất của hãng nào là bao nhiêu?
+
+*TravelBuddy đang suy nghĩ...*
+
+> **[Hệ thống]** Gọi tool: `search_flights({'origin': 'Hà Nội', 'destination': 'Đà Lạt'})`
+> 
+> **[Hệ thống]** Trả lời trực tiếp
+
+**TravelBuddy:** Hiện tại, mình đã tìm thấy thông tin về vé máy bay từ Hà Nội đi Đà Lạt như sau:
+
+1. **Hãng hàng không**: Vietnam Airlines
+   - **Giá vé một chiều**: 968.000 VND
+   - **Giá vé khứ hồi**: 1.936.000 VND
+
+2. **Hãng hàng không**: Vietjet Air
+   - **Giá vé một chiều**: từ 490.000 VND
+
+Bạn có muốn đặt vé khứ hồi hay một chiều? Và bạn có ngân sách cụ thể cho chuyến đi này không?
+
+---
+
+## Test 8: End-to-End Realtime Trip
+**Mục tiêu:** Kiểm tra khả năng Agent điều phối tools, kềnh cựa Toán học phân bổ Quỹ ăn uống và format đúng.
+
+**Bạn:** Tôi ở HN, muốn đi Nha Trang 3 ngày 2 đêm, ngân sách 9 triệu
+
+*TravelBuddy đang suy nghĩ...*
+
+> **[Hệ thống]** Gọi tool: `search_flights({'origin': 'Hà Nội', 'destination': 'Nha Trang'})`
+> 
+> **[Hệ thống]** Gọi tool: `get_current_weather({'city': 'Nha Trang'})`
+> 
+> **[Hệ thống]** Gọi tool: `calculate_budget({'total_budget': 9000000, 'expenses': 'vé máy bay:843000'})`
+> 
+> **[Hệ thống]** Gọi tool: `search_hotels({'city': 'Nha Trang', 'max_price_per_night': 2278500})`
+> 
+> **[Hệ thống]** Trả lời trực tiếp
+
+**TravelBuddy:** Dưới đây là thông tin về chuyến đi mà mình tìm được cho bạn ở Nha Trang:
+
+1. **Chuyến bay:**
+   - **Giá vé đã chek:** 843.000 VNĐ
+
+2. **Khách sạn:**
+   - **Tên khách sạn:** Seaside Boutique Hotel Nha Trang Beach
+   - **Số sao:** 4 sao
+   - **Mức giá phòng mỗi đêm:** 1.822.800 VNĐ (giá tạm tính)
+
+3. **Tổng kết chi phí:**
+   - **Chi phí vé máy bay:** 843.000 VNĐ
+   - **Chi phí khách sạn (2 đêm):** 3.645.600 VNĐ
+   - **Tổng chi:** 4.488.600 VNĐ
+   - **Ngân sách ban đầu:** 9.000.000 VNĐ
+   - **Còn lại:** 4.511.400 VNĐ (Quỹ ăn uống và vui chơi thực tế của bạn)
+
+4. **Gợi ý thêm:**
+   - Với số tiền còn lại 4.511.400 VNĐ, bạn có thể thoải mái thưởng thức ẩm thực địa phương và tham gia các hoạt động vui chơi giải trí tại Nha Trang. Hãy nhớ thử các món hải sản tươi ngon và tham gia các tour khám phá đảo nhé!
+
+Nếu bạn cần thêm thông tin hoặc muốn đặt phòng, hãy cho mình biết nhé!
