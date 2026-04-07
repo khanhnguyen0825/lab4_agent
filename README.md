@@ -9,11 +9,11 @@ TravelBuddy là một chatbot thông minh dựa trên AI được phát triển 
 
 - **Agentic Architecture:** Xây dựng với LangGraph, cho phép AI tự động phân tích và gọi chuỗi các công cụ (Tool Chaining) theo logic phức tạp.
 - **Bộ nhớ thông minh:** Duy trì ngữ cảnh đoạn hội thoại liên tục nhờ LangGraph Memory.
-- **Tích hợp Custom Tools:**
-  - `search_flights`: Tìm kiếm vé máy bay nội địa theo ngày, giờ thật.
-  - `search_hotels`: Check khách sạn cùng rating ở các điểm đến.
-  - `calculate_budget`: Tự động cộng - trừ các khoản để cân đối ngân sách tổng quát cho từng người dùng.
-- **Web UI:** Glassmorphism, Dark Mode.
+- **Tích hợp Real-time Tools (Kết nối Internet):**
+  - `search_flights` & `search_hotels`: Tạm biệt mô hình dữ liệu giả (mock data), dự án nay đã được tích hợp thuật toán **Google Search (thông qua SerpAPI)** để lấy kết quả vé máy bay thật và check phòng khách sạn kèm Rating của Google Local theo thời gian thực.
+  - `get_current_weather`: Kết nối `wttr.in` xử lý thông tin thời tiết điểm đến và đưa lời khuyên lịch trình.
+  - `calculate_budget`: Tính toán ngân sách tổng quát cho chuyến đi, ước lượng thuế phí cho vé máy bay (nếu có) và phân bổ ngân sách riêng cho các hoạt động vui chơi trước khi gợi ý phòng khách sạn để người dùng có mức giá hợp lý.
+- **Web UI:** Giao diện AI Chatbot với Glassmorphism, Dark Mode.
 
 ---
 
@@ -58,12 +58,13 @@ source venv/bin/activate
 
 Cài đặt các gói thư viện cần thiết:
 ```bash
-pip install langchain langchain-openai langgraph fastapi uvicorn pydantic python-dotenv
+pip install langchain langchain-openai langgraph fastapi uvicorn pydantic python-dotenv requests google-search-results
 ```
 
 Tạo cấu hình môi trường `.env`: Đổi tên file hoặc tạo file `.env` chứa API keys của bạn:
 ```env
 OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+SERPAPI_API_KEY=dán-key-serpapi-của-bạn-vào-đây # Đăng ký tài khoản free tại serpapi.com
 ```
 
 ## Công nghệ sử dụng
