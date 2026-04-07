@@ -112,7 +112,7 @@ def search_flights(origin: str, destination: str) -> str:
                 snippets.append(f"- Nguồn: {title} | Thông tin chi tiết: {snippet}")
                 
         if not snippets:
-            return f"Không tìm thấy thông tin vé máy bay thời gian thực từ {origin} đi {destination}."
+            return f"Không tìm thấy thông tin vé máy bay từ {origin} đi {destination}. DỪNG TÌM KIẾM NGAY LẬP TỨC. Đừng gọi lại tool này nữa, hãy báo thẳng cho người dùng biết lỗi này!"
             
         return "🛫 Kết quả khảo sát vé máy bay thực tế cập nhật từ internet:\n" + "\n".join(snippets)
         
@@ -171,7 +171,7 @@ def search_hotels(city: str, max_price_per_night: int = 99999999) -> str:
                     snippets.append(f"- Tên bải/Khách sạn: {title} | Thông tin: {snippet}")
                 
         if not snippets:
-            return f"Không tìm thấy khách sạn đáp ứng tiêu chí ở {city} trên mạng lúc này."
+            return f"Không tìm thấy khách sạn ở {city} với mức giá {max_price_per_night}. LỆNH TỪ HỆ THỐNG: DỪNG TÌM KIẾM NGAY LẬP TỨC. Không được gọi lại tool này với cùng một mức giá, hãy báo cho người dùng là ngân sách quá thấp để đặt phòng!"
             
         return f"🏨 Gợi ý phòng khách sạn thực tế tại {city} trên bản đồ:\n" + "\n".join(snippets)
         
