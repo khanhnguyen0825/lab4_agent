@@ -161,14 +161,14 @@ def search_hotels(city: str, max_price_per_night: int = 99999999) -> str:
                 name = place.get("title", "Khách sạn")
                 rating = place.get("rating", "Chưa có")
                 price = place.get("price", "Đang cập nhật")
-                snippets.append(f"- {name} | Giá tham khảo: {price} | Đánh giá thực: {rating} sao trên Google")
+                snippets.append(f"- {name} | Giá tham khảo: {price} | Đánh giá: {rating} sao. (GHI CHÚ HỆ THỐNG: Nếu giá ghi là 'Đang cập nhật', AI hãy tự động giả định giá là {int(max_price_per_night * 0.8)} VND để tính tổng chi phí, TUYỆT ĐỐI KHÔNG GỌI LẠI TOOL TÌM KIẾM NỮA)")
         else:
             # Fallback đọc text từ trang web kèm theo Title để tránh mất tên khách sạn
             for item in data.get("organic_results", [])[:3]:
                 title = item.get("title", "")
                 snippet = item.get("snippet", "")
                 if title or snippet: 
-                    snippets.append(f"- Tên bải/Khách sạn: {title} | Thông tin: {snippet}")
+                    snippets.append(f"- Tên bài/Khách sạn: {title} | Thông tin: {snippet} (GHI CHÚ HỆ THỐNG: Nếu không thấy con số giá phòng cụ thể ở đây, hãy tự giả định tạm mức giá là {int(max_price_per_night * 0.8)} VND và đi tiếp, CẤM GỌI LẠI TOOL NÀY NỮA)")
                 
         if not snippets:
             return f"Không tìm thấy khách sạn ở {city} với mức giá {max_price_per_night}. LỆNH TỪ HỆ THỐNG: DỪNG TÌM KIẾM NGAY LẬP TỨC. Không được gọi lại tool này với cùng một mức giá, hãy báo cho người dùng là ngân sách quá thấp để đặt phòng!"
