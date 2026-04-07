@@ -60,44 +60,123 @@ HOTELS_DB = {
 # LẬP TRÌNH CÔNG CỤ (TOOLS)
 # =================================================================
 
+# =================================================================
+# CODE CŨ (Phiên bản MOCK DATA ban đầu của bài Lab)
+# Đã comment lại theo yêu cầu cập nhật lên project real-time
+# =================================================================
+# @tool
+# def search_flights(origin: str, destination: str) -> str:
+#     """Tìm kiếm các chuyến bay giữa hai thành phố."""
+#     flights = FLIGHTS_DB.get((origin, destination))
+#     if not flights:
+#         flights = FLIGHTS_DB.get((destination, origin))
+#         if flights:
+#             origin, destination = destination, origin 
+#     if not flights: return f"Không tìm thấy chuyến bay từ {origin} đến {destination}."
+#     result = f"Danh sách chuyến bay từ {origin} đến {destination}:\n"
+#     for f in flights: result += f"- {f['airline']} ({f['class']}): {f['departure']} -> {f['arrival']} | Giá: {f['price']:,}đ\n"
+#     return result
+
+# =================================================================
+# CODE MỚI: Phiên bản Tích hợp SERPAPI (Google Flights/Search thời gian thực)
+# =================================================================
 @tool
 def search_flights(origin: str, destination: str) -> str:
-    """Tìm kiếm các chuyến bay giữa hai thành phố."""
-    # Thử tra cứu theo chiều thuận
-    flights = FLIGHTS_DB.get((origin, destination))
+    """Tìm kiếm vé máy bay ngoài đời thật giữa hai thành phố thông qua API Google."""
+    api_key = os.getenv("SERPAPI_API_KEY")
     
-    # Nếu không thấy, thử tra ngược chiều (yêu cầu bài Lab)
-    if not flights:
-        flights = FLIGHTS_DB.get((destination, origin))
-        if flights:
-            origin, destination = destination, origin # Đảo lại để hiển thị đúng
+    if not api_key or api_key.strip() == "":
+        return "⚠️ CẢNH BÁO TỪ HỆ THỐNG: Tôi cần bạn cung cấp SERPAPI_API_KEY trong file .env để tra cứu vé máy bay thật trên mạng."
+    
+    try:
+        import requests
+        url = "https://serpapi.com/search"
+        params = {
+            "engine": "google",
+            "q": f"giá vé máy bay từ {origin} đi {destination} hôm nay mới nhất",
+            "hl": "vi",
+            "gl": "vn",
+            "api_key": api_key
+        }
+        res = requests.get(url, params=params, timeout=10)
+        data = res.json()
+        
+        snippets = []
+        if "answer_box" in data and "snippet" in data["answer_box"]:
+            snippets.append(data["answer_box"]["snippet"])
+            
+        for item in data.get("organic_results", [])[:3]:
+            title = item.get("title", "")
+            snippet = item.get("snippet", "")
+            if title or snippet:
+                snippets.append(f"- Nguồn: {title} | Thông tin chi tiết: {snippet}")
+                
+        if not snippets:
+            return f"Không tìm thấy thông tin vé máy bay thời gian thực từ {origin} đi {destination}."
+            
+        return "🛫 Kết quả khảo sát vé máy bay thực tế cập nhật từ internet:\n" + "\n".join(snippets)
+        
+    except Exception as e:
+         return f"Xảy ra lỗi khi gọi SerpApi: {str(e)}"
 
-    if not flights:
-        return f"Không tìm thấy chuyến bay từ {origin} đến {destination}."
+# CODE CŨ (MOCK DATA)
+# @tool
+# def search_hotels(city: str, max_price_per_night: int = 99999999) -> str:
+#     """Tìm kiếm khách sạn tại một thành phố, có thể lọc theo giá tối đa mỗi đêm."""
+#     hotels = HOTELS_DB.get(city)
+#     if not hotels: return f"Không tìm thấy khách sạn tại {city}."
+#     filtered_hotels = [h for h in hotels if h['price_per_night'] <= max_price_per_night]
+#     filtered_hotels.sort(key=lambda x: x['rating'], reverse=True)
+#     if not filtered_hotels: return f"Không."
+#     result = f"Danh sách khách sạn tại {city} \n"
+#     for h in filtered_hotels: result += f"- {h['name']} ({h['stars']} sao): {h['area']} | Giá: {h['price_per_night']:,}đ/đêm\n"
+#     return result
 
-    result = f"Danh sách chuyến bay từ {origin} đến {destination}:\n"
-    for f in flights:
-        result += f"- {f['airline']} ({f['class']}): {f['departure']} -> {f['arrival']} | Giá: {f['price']:,}đ\n"
-    return result
-
+# CODE MỚI: Phiên bản Tích hợp SERPAPI
 @tool
 def search_hotels(city: str, max_price_per_night: int = 99999999) -> str:
-    """Tìm kiếm khách sạn tại một thành phố, có thể lọc theo giá tối đa mỗi đêm."""
-    hotels = HOTELS_DB.get(city)
-    if not hotels:
-        return f"Không tìm thấy khách sạn tại {city}."
-
-    # Lọc theo giá và sắp xếp theo rating giảm dần (yêu cầu bài Lab)
-    filtered_hotels = [h for h in hotels if h['price_per_night'] <= max_price_per_night]
-    filtered_hotels.sort(key=lambda x: x['rating'], reverse=True)
-
-    if not filtered_hotels:
-        return f"Không tìm thấy khách sạn tại {city} với giá dưới {max_price_per_night:,}đ/đêm. Hãy thử tăng ngân sách."
-
-    result = f"Danh sách khách sạn tại {city} (Giá <= {max_price_per_night:,}đ, xếp theo rating):\n"
-    for h in filtered_hotels:
-        result += f"- {h['name']} ({h['stars']} sao): {h['area']} | Giá: {h['price_per_night']:,}đ/đêm | Rating: {h['rating']}\n"
-    return result
+    """Tìm kiếm thông tin khách sạn thực tế cùng giá cả ngoài đời thông qua API Google."""
+    api_key = os.getenv("SERPAPI_API_KEY")
+    
+    if not api_key or api_key.strip() == "":
+        return "⚠️ CẢNH BÁO TỪ HỆ THỐNG: Tôi cần SERPAPI_API_KEY trong file .env để tra cứu phòng khách sạn thật trên mạng."
+        
+    try:
+        import requests
+        url = "https://serpapi.com/search"
+        params = {
+            "engine": "google",
+            "q": f"Khách sạn tại {city} dưới {max_price_per_night} VND mỗi đêm booking hoặc agoda",
+            "hl": "vi",
+            "gl": "vn",
+            "api_key": api_key
+        }
+        res = requests.get(url, params=params, timeout=10)
+        data = res.json()
+        
+        snippets = []
+        # Ưu tiên bóc rễ ra danh sách "Local pack" (phần hiển thị review khách sạn map của Google trang 1)
+        if "local_results" in data and "places" in data["local_results"]:
+            for place in data["local_results"]["places"][:4]:
+                name = place.get("title", "Khách sạn")
+                rating = place.get("rating", "Chưa có")
+                price = place.get("price", "Đang cập nhật")
+                snippets.append(f"- {name} | Giá tham khảo: {price} | Đánh giá thực: {rating} sao trên Google")
+        else:
+            # Fallback đọc text từ trang web kèm theo Title để tránh mất tên khách sạn
+            for item in data.get("organic_results", [])[:3]:
+                title = item.get("title", "")
+                snippet = item.get("snippet", "")
+                if title or snippet: 
+                    snippets.append(f"- Tên bải/Khách sạn: {title} | Thông tin: {snippet}")
+                
+        if not snippets:
+            return f"Không tìm thấy khách sạn đáp ứng tiêu chí ở {city} trên mạng lúc này."
+            
+        return f"🏨 Gợi ý phòng khách sạn thực tế tại {city} trên bản đồ:\n" + "\n".join(snippets)
+        
+    except Exception as e:
+         return f"Xảy ra lỗi gọi SerpApi: {str(e)}"
 
 @tool
 def calculate_budget(total_budget: int, expenses: str) -> str:
